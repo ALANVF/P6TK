@@ -17,7 +17,8 @@
 		"Tk::Root": "lib/Tk/Root.pm6",
 		"Tk::WidgetAttrs": "lib/Tk/WidgetAttrs.pm6",
 		"Tcl": "lib/Tcl.pm6",
-		"Tk::Label": "lib/Tk/Label.pm6"
+		"Tk::Label": "lib/Tk/Label.pm6",
+		"Tcl::OptionParser": "lib/Tcl/OptionParser.pm6"
 	},
 	"name": "P6TK",
 	"description": "A library that lets you use Tk in Perl 6. Still a work in progress.",
