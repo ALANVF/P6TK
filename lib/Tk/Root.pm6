@@ -2,76 +2,66 @@ use Tcl;
 use Tk::Window;
 
 class Tk::Root is export {
-    has Tcl::Interp $.interp;
-    has Tk::Window $.win;
+	has Tcl::Interp $.interp;
+	has Tk::Window $.win;
 
-    method new {
-        self.bless:
-                interp => Tcl::Interp.new,
-                win => Tk::Window.new
-    }
-
-    submethod BUILD(:$!interp, :$win) {
-        $!win = $win;
-        $!win.root = self;
-    }
-
-    submethod AT-KEY(Str $key) {
-        $!win{$key}
-    }
-
-    #`(multi) submethod ASSIGN-KEY(Str $key, Tk::Widget \val) {
-        $!win{$key} = val
-    }
-
-    #`(
-	multi submethod ASSIGN-KEY(Str $key, Tk::Widget \val, :$pack!) {
-		$!win{$key}:pack{|%($pack)} = val;
+	method new {
+		self.bless:
+			interp => Tcl::Interp.new,
+			win => Tk::Window.new
 	}
-		)
 
-    method get-path(Str $path) {
-        my @path = $path.split(".").Array;
-        @path .= rotate.pop;
+	submethod BUILD(:$!interp, :$win) {
+		$!win = $win;
+		$!win.root = self;
+	}
 
-        my $r := $!win;
+	submethod AT-KEY(Str $key) {
+		$!win{$key}
+	}
 
-        for @path -> $k {
-            $r := $r{$k}
-        }
+	submethod ASSIGN-KEY(Str $key, Tk::Widget \val) {
+		$!win{$key} = val
+	}
 
-        $r
-    }
+	method get-path(Str $path) {
+		my @path = $path.split(".").Array;
+		@path .= rotate.pop;
 
-    multi method raw(Str $cmd) {
-        $!interp.send: $cmd
-    }
+		my $r := $!win;
 
-    multi method raw(*@cmd) {
-        $!interp.send: @cmd.join(" ")
-    }
+		for @path -> $k {
+			$r := $r{$k}
+		}
 
-    # TODO: add io with $!interp
+		$r
+	}
 
-    method main(&b) {
-        $!interp.out(-> $v {
-            # issue here is that it doesn't capture all the input at one. ez fix later
-            say "->";
-            dd $v, $v.trim.split(" ", 3);
-            my ($path, $event, $rest) = $v.trim.split(" ", 3);
+	multi method raw(Str $cmd) {
+		$!interp.send: $cmd
+	}
 
-            $rest = Tcl::OptionParser::Parser.new.parse($rest);
+	multi method raw(*@cmd) {
+		$!interp.send: @cmd.join(" ")
+	}
 
-            #dd $path, $event, $rest, self.get-path($path).events;
+	# TODO: add io with $!interp
 
-            if self.get-path($path).events{$event}:exists {
-                self.get-path($path).events{$event}($rest)
-            }
-        });
-        $!interp.init(&b)
-    }
+	method main(&b) {
+		$!interp.out(-> $v {
+			my ($path, $event, $rest) = $v.trim.split(" ", 3);
 
-    method quit {
-        $!interp.quit
-    }
+			$rest = Tcl::OptionParser::Parser.new.parse($rest);
+
+			if self.get-path($path).events{$event}:exists {
+				self.get-path($path).events{$event}($rest)
+			}
+		});
+
+		$!interp.init(&b)
+	}
+
+	method quit {
+		$!interp.send: "exit"
+	}
 }
