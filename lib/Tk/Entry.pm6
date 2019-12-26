@@ -4,7 +4,7 @@ use Tk::WidgetAttrs;
 use Tk::Root;
 
 class Tk::Entry does Tk::Widget does Tk::TextAttrs does Tk::ColorAttrs is export {
-	has Str $!txt is rw = "";
+	has Str $!txt = "";
 
 	method new(*%options) {
 		self.bless:
